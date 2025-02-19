@@ -1,20 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-5827354990992470481
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
-  m_Name: Metro Settings
-  m_EditorClassIdentifier: 
-  m_LoaderManagerInstance: {fileID: 4150679367790298429}
-  m_InitManagerOnStart: 1
---- !u!114 &-2833516047818383919
+--- !u!114 &-3857923535518988718
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -26,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
   m_Name: Standalone Settings
   m_EditorClassIdentifier: 
-  m_LoaderManagerInstance: {fileID: -2193959087009635277}
+  m_LoaderManagerInstance: {fileID: -2645916290061717840}
   m_InitManagerOnStart: 1
---- !u!114 &-2193959087009635277
+--- !u!114 &-2645916290061717840
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -44,7 +30,8 @@ MonoBehaviour:
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders:
-  - {fileID: 11400000, guid: df798d3df43768043866dd8a3c7d954a, type: 2}
+  - {fileID: 11400000, guid: 7cc48d635409b4f4b94d3b71c3b64e11, type: 2}
+  - {fileID: 11400000, guid: 308c7bdc01292574585e5b5f954b55af, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59,9 +46,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Keys: 010000000e000000
   Values:
-  - {fileID: -2833516047818383919}
-  - {fileID: -5827354990992470481}
---- !u!114 &4150679367790298429
+  - {fileID: -3857923535518988718}
+  - {fileID: 2189355659346878455}
+--- !u!114 &2189355659346878455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
+  m_Name: Metro Settings
+  m_EditorClassIdentifier: 
+  m_LoaderManagerInstance: {fileID: 7194083882017701742}
+  m_InitManagerOnStart: 1
+--- !u!114 &7194083882017701742
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -77,4 +78,4 @@ MonoBehaviour:
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders:
-  - {fileID: 11400000, guid: df798d3df43768043866dd8a3c7d954a, type: 2}
+  - {fileID: 11400000, guid: 7cc48d635409b4f4b94d3b71c3b64e11, type: 2}

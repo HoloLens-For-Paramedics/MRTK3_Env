@@ -1,0 +1,18 @@
+{
+    "patient_info_name":"Walter Hartwell White",
+    "patient_info_age":"50",
+    "patient_info_gender":"man",
+    "patient_info_dob":"09-07-1958",
+    "patient_info_weight":"150",
+    "patient_info_race":"Caucasian",
+    "patient_info_pcr_num": "1274",
+    "patient_info_home_address":"308 Negra Arroyo Lane",
+    "patient_info_city":"Albuquerque",
+    "patient_info_county" :"",
+    "patient_info_zip" : "87104",
+    "patient_info_state" : "New Mexico",
+    "patient_info_alt_home_address" : "",
+    "allergens":"Cancer",
+    "medications":"Chemotherapy",
+    "conditions":"Dying?"
+}
