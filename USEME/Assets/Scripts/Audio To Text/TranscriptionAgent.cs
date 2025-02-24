@@ -71,10 +71,10 @@ public class TranscriptionAgent : MonoBehaviour
         }
 
         Debug.Log("Starting transcription...");
-        await GPTAudioToJSON(audioFilePath);
+        await AzureAudioToJSON(audioFilePath);
     }
 
-    private async System.Threading.Tasks.Task GPTAudioToJSON(string filePath)
+    private async System.Threading.Tasks.Task AzureAudioToJSON(string filePath)
     {
         var speechConfig = SpeechConfig.FromSubscription(azureKey, region);
         var audioConfig = AudioConfig.FromWavFileInput(filePath);
@@ -178,6 +178,6 @@ public class TranscriptionAgent : MonoBehaviour
         }
 
         Debug.Log("Starting transcription...");
-        await GPTAudioToJSON(audioPath);
+        await AzureAudioToJSON(audioPath);
     }
 }

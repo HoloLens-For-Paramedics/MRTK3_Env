@@ -1,7 +1,6 @@
 # Configuration files
 appsettings.json
 appsettings.*.json
-appsetings.json.meta
 
 # Unity generated
 [Ll]ibrary/
