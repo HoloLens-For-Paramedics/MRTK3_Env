@@ -76,6 +76,7 @@ public class AudioRecorder : MonoBehaviour
             if (isRecording)
             {
                 SaveAudioToFile(filePath);
+                Debug.Log($"Audio files will be saved in: {directoryPath}");
             }
 
             waitingToSave = false;

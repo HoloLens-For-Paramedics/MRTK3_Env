@@ -33,8 +33,8 @@ using System.Text.Json.Serialization;
 public class AudioFileLogger : MonoBehaviour
 {
     // IMPORTANT: API Keys & Configs (accessed from appsettings.json, not included in repo)
-    private string azureKey;
-    private string openAIKey;
+    private string azureKey = "2LctOzKb97Jx8SWGhXMtMlrwam0sULrwVhYTeJWLgkcrECBiM99jJQQJ99BBAC4f1cMXJ3w3AAAYACOGatEC";
+    private string openAIKey = "sk-ILxzLpUpBKwa4C7YRGkFtuNcpnakGf6TuC8G0QsN_cT3BlbkFJp90cJpz9UJ3pqubHuhfuejVJ1-oKSKKUN3XZOHp0oA";
     private string openAIURL = "https://api.openai.com/v1/chat/completions";
     private string region = "westus";
 
@@ -49,6 +49,8 @@ public class AudioFileLogger : MonoBehaviour
     private string current_json;
     private string timestamp;
     private string prompt = "You are to fill out the following JSON data with the corresponding string input. Do not overwrite existing data, rather add to it if something already exists. For example, if there is a pre-existing allergy, and you learn of a new one, add to the lits of allergies, but do not delete the already known one. If you have no information for a field, rather that be in the provided template or the context passed, leave it empty. Do not delete Patient ID. Do not add information to the JSON that does not exist. Only add what you are certain matches with JSON field. Do not give your answer formatted. Omit newline, tab, or any other formatting. Return your JSON data as a readable string. Make sure to return the complete JSON template, even if data is missing. From input, you may reformat the answer to be more easily readable. Ex: \"I have an allergy to peanuts\" may just be \"peanuts\".";
+
+
 
     // AppSettings class
     // This class is used to store the API keys and region.
@@ -68,7 +70,7 @@ public class AudioFileLogger : MonoBehaviour
     // load config variables from appsettings.json
     void Awake()
     {
-        LoadConfiguration();
+        // LoadConfiguration();
         json_template = $@"{{""PatientID"":""{patientId}"":""PatientName"":""Age"":""Gender"":""HomeAddress"":""City"":""County"":""State"":""ZIPCode"":""WeightKg"":""Race"":""IncidentNumber"":""ServiceRequested"":""OtherAgencies"":""PrimaryRole"":""ResponseMode"":""EMSShift"":""DispatchCity"":""DispatchState"":""DispatchZIP"":""DispatchCounty"":""SceneType"":""Category"":""BackInService"":""CrewMembers"":""NumberOfCrew"":""OtherAgencyOnScene"":""NumberOfPatients"":""PatientContactMade"":""ArrivedOnScene"":""FirstOnScene"":""StagePriorToContact"":""PrimaryComplaint"":""Duration"":""TimeUnits"":""AlcoholDrugUse"":""InitialAcuity"":""CardiacArrest"":""PossibleInjury"":""BaseContactMade"":""SignsOfAbuse"":""5150Hold"":""PastMedicalHistory"":""CurrentMedications"":""MedicationAllergies"":""AdvanceDirectives"":""HeartRate"":""BloodPressure"":""RespiratoryRate"":""SPO2"":""Temperature"":""Glucose"":""GCS_Eye"":""GCS_Verbal"":""GCS_Motor"":""GCS_Score"":""GCS_Qualifier"":""MentalStatus"":""AbdomenExam"":""ChestExam"":""BackSpineExam"":""SkinAssessment"":""EyeExam_Bilateral"":""EyeExam_Left"":""EyeExam_Right"":""LungExam"":""ExtremitiesExam"":""PrimaryImpression"":""PrimarySymptom"":""OtherSymptoms"":""SymptomOnset"":""TypeOfPatient"":""MedTime"":""MedCrewID"":""Medication"":""Dosage"":""MedUnits"":""Route"":""MedResponse"":""MedComplications"":""ProcTime"":""ProcCrewID"":""Procedure"":""ProcLocation"":""IVLocation"":""Size"":""Attempts"":""Successful"":""ProcResponse"":""PatientEvaluationCare"":""CrewDisposition"":""TransportDisposition"":""LevelOfCareProvided"":""TransferredCareAt"":""FinalPatientAcuity"":""TurnaroundDelay"":""TransportAgency"":""TransportUnit"":""LevelOfTransport"":""EMSPrimaryCareProvider"":""TransportReason"":""CrewSignature"":""CrewMember_PPE"":""PPEUsed"":""SuspectedExposure"":""MonitorTime"":""MonitorEventType"":""Time"":}}";
         current_json = json_template;
     }
@@ -78,7 +80,7 @@ public class AudioFileLogger : MonoBehaviour
     // You must import this yourself as git will ignore it.
     private void LoadConfiguration()
     {
-        string configPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "appsettings.json");
+        string configPath = Path.Combine(Application.dataPath, "appsettings.json");
         if (File.Exists(configPath))
         {
             try
@@ -132,7 +134,8 @@ public class AudioFileLogger : MonoBehaviour
 
         Debug.Log("FILELOGGER: Starting Audio File Monitoring...");
 
-        directoryPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "AudioFiles_Test");
+        directoryPath = Path.Combine(Application.persistentDataPath, "Recordings");
+
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
@@ -189,10 +192,12 @@ public class AudioFileLogger : MonoBehaviour
             }
             else if (result.Reason == ResultReason.NoMatch)
             {
+                QueuedText = null;
                 Debug.LogWarning("FILELOGGER: No speech recognized.");
             }
             else if (result.Reason == ResultReason.Canceled)
             {
+                QueuedText = null;
                 var cancellation = CancellationDetails.FromResult(result);
                 Debug.LogError($"FILELOGGER: Speech recognition canceled: {cancellation.Reason}");
 
