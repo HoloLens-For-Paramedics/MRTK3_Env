@@ -34,7 +34,7 @@ public class AudioFileLogger : MonoBehaviour
 {
     // IMPORTANT: API Keys & Configs (accessed from appsettings.json, not included in repo)
     private string azureKey;
-    private string openAIKey;
+    private string oaiKey;
     private string openAIURL = "https://api.openai.com/v1/chat/completions";
     private string region = "westus";
 
@@ -86,7 +86,7 @@ public class AudioFileLogger : MonoBehaviour
                 string jsonContent = File.ReadAllText(configPath);
                 var config = JsonUtility.FromJson<AppSettings>(jsonContent);
 
-                openAIKey = config?.OpenAIApiKey;
+                oaiKey = config?.OpenAIApiKey;
                 region = config?.AzureRegion;
                 azureKey = config?.AzureSubscriptionKey;
             }
@@ -245,7 +245,7 @@ public class AudioFileLogger : MonoBehaviour
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("Authorization", "Bearer " + openAIKey);
+        request.SetRequestHeader("Authorization", "Bearer " + oaiKey);
 
         yield return request.SendWebRequest();
 
