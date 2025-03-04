@@ -1,6 +1,7 @@
 # Configuration files
 appsettings.json
 appsettings.*.json
+AudioFileLoggerHEADSET.cs
 
 # Unity generated
 [Ll]ibrary/

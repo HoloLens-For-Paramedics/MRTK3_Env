@@ -8,7 +8,6 @@
   * shall not be liable for any damages arising from the use of this software.
   *
   * Author: Logan Calder | lcalder@scu.edu
-  * Co-Author: Jack Landers | jlanders@scu.edu
 */
 
 using System;
@@ -22,6 +21,8 @@ using UnityEngine.Networking;
 using System.Text;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 
 // AudioFileLogger.cs
@@ -33,10 +34,16 @@ using System.Text.Json.Serialization;
 public class AudioFileLogger : MonoBehaviour
 {
     // IMPORTANT: API Keys & Configs (accessed from appsettings.json, not included in repo)
-    private string azureKey;
-    private string oaiKey;
-    private string openAIURL = "https://api.openai.com/v1/chat/completions";
+    // AZURE DATA    
+    private string azureKey = "";
     private string region = "westus";
+    // OPEN AI DATA
+    private string openAIKey = "";
+    private string openAIURL = "https://api.openai.com/v1/chat/completions";
+    // SUPABASE DATA
+    private string supabaseUrl = "https://yuwrsuaqhbbfxqlrybgg.supabase.co/rest/v1/PatientData";
+    private string supabaseKey = ""; // Replace with your Supabase API key service role key
+
 
     // File monitoring variables
     private string directoryPath;
@@ -46,9 +53,9 @@ public class AudioFileLogger : MonoBehaviour
     private string patientId = "";
 
     private string json_template;
-    private string current_json;
+
     private string timestamp;
-    private string prompt = "You are to fill out the following JSON data with the corresponding string input. Do not overwrite existing data, rather add to it if something already exists. For example, if there is a pre-existing allergy, and you learn of a new one, add to the lits of allergies, but do not delete the already known one. If you have no information for a field, rather that be in the provided template or the context passed, leave it empty. Do not delete Patient ID. Do not add information to the JSON that does not exist. Only add what you are certain matches with JSON field. Do not give your answer formatted. Omit newline, tab, or any other formatting. Return your JSON data as a readable string. Make sure to return the complete JSON template, even if data is missing. From input, you may reformat the answer to be more easily readable. Ex: \"I have an allergy to peanuts\" may just be \"peanuts\".";
+    private string prompt = "You are to fill out the following JSON data with the corresponding string input. Do not delete Patient ID. Do not add information to the JSON that does not exist. Only add what you are certain matches with JSON field. Do not give your answer formatted. Omit newline, tab, or any other formatting. Return your JSON data as a readable string. Make sure to return the complete JSON template, even if data is missing. You should also add, to the section Severity, a severity level based on the severity of the patient's condition (Undetermined, Good, Fair, Serious, Critical). From input, you may reformat the answer to be more easily readable. Ex: \"I have an allergy to peanuts\" may just be \"peanuts\".";
 
     // AppSettings class
     // This class is used to store the API keys and region.
@@ -68,39 +75,39 @@ public class AudioFileLogger : MonoBehaviour
     // load config variables from appsettings.json
     void Awake()
     {
-        LoadConfiguration();
-        json_template = $@"{{""PatientID"":""{patientId}"":""PatientName"":""Age"":""Gender"":""HomeAddress"":""City"":""County"":""State"":""ZIPCode"":""WeightKg"":""Race"":""IncidentNumber"":""ServiceRequested"":""OtherAgencies"":""PrimaryRole"":""ResponseMode"":""EMSShift"":""DispatchCity"":""DispatchState"":""DispatchZIP"":""DispatchCounty"":""SceneType"":""Category"":""BackInService"":""CrewMembers"":""NumberOfCrew"":""OtherAgencyOnScene"":""NumberOfPatients"":""PatientContactMade"":""ArrivedOnScene"":""FirstOnScene"":""StagePriorToContact"":""PrimaryComplaint"":""Duration"":""TimeUnits"":""AlcoholDrugUse"":""InitialAcuity"":""CardiacArrest"":""PossibleInjury"":""BaseContactMade"":""SignsOfAbuse"":""5150Hold"":""PastMedicalHistory"":""CurrentMedications"":""MedicationAllergies"":""AdvanceDirectives"":""HeartRate"":""BloodPressure"":""RespiratoryRate"":""SPO2"":""Temperature"":""Glucose"":""GCS_Eye"":""GCS_Verbal"":""GCS_Motor"":""GCS_Score"":""GCS_Qualifier"":""MentalStatus"":""AbdomenExam"":""ChestExam"":""BackSpineExam"":""SkinAssessment"":""EyeExam_Bilateral"":""EyeExam_Left"":""EyeExam_Right"":""LungExam"":""ExtremitiesExam"":""PrimaryImpression"":""PrimarySymptom"":""OtherSymptoms"":""SymptomOnset"":""TypeOfPatient"":""MedTime"":""MedCrewID"":""Medication"":""Dosage"":""MedUnits"":""Route"":""MedResponse"":""MedComplications"":""ProcTime"":""ProcCrewID"":""Procedure"":""ProcLocation"":""IVLocation"":""Size"":""Attempts"":""Successful"":""ProcResponse"":""PatientEvaluationCare"":""CrewDisposition"":""TransportDisposition"":""LevelOfCareProvided"":""TransferredCareAt"":""FinalPatientAcuity"":""TurnaroundDelay"":""TransportAgency"":""TransportUnit"":""LevelOfTransport"":""EMSPrimaryCareProvider"":""TransportReason"":""CrewSignature"":""CrewMember_PPE"":""PPEUsed"":""SuspectedExposure"":""MonitorTime"":""MonitorEventType"":""Time"":}}";
-        current_json = json_template;
+        // LoadConfiguration();
+        // Call the GeneratePatientId function and store the result
+        json_template = $@"{{""PatientID"":""{patientId}"":""PatientName"":""Age"":""Gender"":""HomeAddress"":""City"":""County"":""State"":""ZIPCode"":""WeightKg"":""Race"":""IncidentNumber"":""ServiceRequested"":""OtherAgencies"":""PrimaryRole"":""ResponseMode"":""EMSShift"":""DispatchCity"":""DispatchState"":""DispatchZIP"":""DispatchCounty"":""SceneType"":""Category"":""BackInService"":""CrewMembers"":""NumberOfCrew"":""OtherAgencyOnScene"":""NumberOfPatients"":""PatientContactMade"":""ArrivedOnScene"":""FirstOnScene"":""StagePriorToContact"":""PrimaryComplaint"":""Duration"":""TimeUnits"":""AlcoholDrugUse"":""InitialAcuity"":""CardiacArrest"":""PossibleInjury"":""BaseContactMade"":""SignsOfAbuse"":""5150Hold"":""PastMedicalHistory"":""CurrentMedications"":""MedicationAllergies"":""AdvanceDirectives"":""HeartRate"":""BloodPressure"":""RespiratoryRate"":""SPO2"":""Temperature"":""Glucose"":""GCS_Eye"":""GCS_Verbal"":""GCS_Motor"":""GCS_Score"":""GCS_Qualifier"":""MentalStatus"":""AbdomenExam"":""ChestExam"":""BackSpineExam"":""SkinAssessment"":""EyeExam_Bilateral"":""EyeExam_Left"":""EyeExam_Right"":""LungExam"":""ExtremitiesExam"":""PrimaryImpression"":""PrimarySymptom"":""OtherSymptoms"":""SymptomOnset"":""TypeOfPatient"":""MedTime"":""MedCrewID"":""Medication"":""Dosage"":""MedUnits"":""Route"":""MedResponse"":""MedComplications"":""ProcTime"":""ProcCrewID"":""Procedure"":""ProcLocation"":""IVLocation"":""Size"":""Attempts"":""Successful"":""ProcResponse"":""PatientEvaluationCare"":""CrewDisposition"":""TransportDisposition"":""LevelOfCareProvided"":""TransferredCareAt"":""FinalPatientAcuity"":""TurnaroundDelay"":""TransportAgency"":""TransportUnit"":""LevelOfTransport"":""EMSPrimaryCareProvider"":""TransportReason"":""CrewSignature"":""CrewMember_PPE"":""PPEUsed"":""SuspectedExposure"":""MonitorTime"":""MonitorEventType"":""Time"":""Severity"":}}";
     }
 
     // LoadConfiguration()
     // This function loads the configuration from appsettings.json. 
     // You must import this yourself as git will ignore it.
-    private void LoadConfiguration()
-    {
-        string configPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "appsettings.json");
-        if (File.Exists(configPath))
-        {
-            try
-            {
-                string jsonContent = File.ReadAllText(configPath);
-                var config = JsonUtility.FromJson<AppSettings>(jsonContent);
+    // private void LoadConfiguration()
+    // {
+    //     string configPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "appsettings.json");
+    //     if (File.Exists(configPath))
+    //     {
+    //         try
+    //         {
+    //             string jsonContent = File.ReadAllText(configPath);
+    //             var config = JsonUtility.FromJson<AppSettings>(jsonContent);
 
-                oaiKey = config?.OpenAIApiKey;
-                region = config?.AzureRegion;
-                azureKey = config?.AzureSubscriptionKey;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Error loading configuration: {ex.Message}");
-            }
-        }
-        else
-        {
-            Debug.LogError($"appsettings.json not found at: {configPath}");
-            Debug.LogError($"Please ensure appsettings.json exists in the project root directory: {Path.GetDirectoryName(configPath)}");
-        }
-    }
+    //             openAIKey = config?.OpenAIApiKey;
+    //             region = config?.AzureRegion;
+    //             azureKey = config?.AzureSubscriptionKey;
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Debug.LogError($"Error loading configuration: {ex.Message}");
+    //         }
+    //     }
+    //     else
+    //     {
+    //         Debug.LogError($"appsettings.json not found at: {configPath}");
+    //         Debug.LogError($"Please ensure appsettings.json exists in the project root directory: {Path.GetDirectoryName(configPath)}");
+    //     }
+    // }
 
     // GeneratePatientId()
     // This function generates a Patient ID in the format PAT-YYYYMMDD-HHMMSS-XXXX
@@ -122,17 +129,12 @@ public class AudioFileLogger : MonoBehaviour
     // Once a file is created, the OnNewFileCreated() function is called.
     public void StartMonitoring()
     {
-        // Call the GeneratePatientId function and store the result
-        patientId = GeneratePatientId();
-        timestamp = GenerateTimestamp();
-        Debug.Log($"Generated Patient ID: {patientId}");
-        Debug.Log($"Generated Timestamp: {timestamp}");
-
         if (isMonitoring) return; // Prevent multiple starts
 
         Debug.Log("FILELOGGER: Starting Audio File Monitoring...");
 
         directoryPath = Path.Combine(Application.persistentDataPath, "Recordings");
+        // directoryPath = Path.Combine(Application.dataPath, "Recordings"); // dev use only
 
         if (!Directory.Exists(directoryPath))
         {
@@ -228,7 +230,7 @@ public class AudioFileLogger : MonoBehaviour
         Debug.Log($"📡 Sending to OpenAI: {rawText}");
         string promptAndInput = prompt.Replace("\"", "\\\"") +
             " input: " + rawText.Replace("\"", "\\\"") +
-            " template: " + current_json.Replace("\"", "\\\"");
+            " template: " + json_template.Replace("\"", "\\\"");
 
         // Do not touch this, is the template for generating the proper response from GPT
         string jsonPayload = "{" +
@@ -245,19 +247,18 @@ public class AudioFileLogger : MonoBehaviour
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("Authorization", "Bearer " + oaiKey);
+        request.SetRequestHeader("Authorization", "Bearer " + openAIKey);
 
         yield return request.SendWebRequest();
 
         if (request.result == UnityWebRequest.Result.Success)
         {
             string responseTextContent = ExtractMessage(request.downloadHandler.text);
-            current_json = responseTextContent;
-            current_json = current_json.Replace("\"PatientID\":\"\"", $"\"PatientID\":\"{patientId}\"");
-            current_json = current_json.Replace("\"Time\":\"\"", $"\"Time\":\"{timestamp}\"");
+            responseTextContent = responseTextContent.Replace("\"PatientID\":\"\"", $"\"PatientID\":\"{patientId}\"");
+            responseTextContent = responseTextContent.Replace("\"Time\":\"\"", $"\"Time\":\"{timestamp}\"");
             File.Delete(audioFilePath);  // Delete the processed audio file to preserve memory
             Debug.Log("Sending JSON to Supabase...");
-            StartCoroutine(SendJsonToSupabase(current_json));
+            StartCoroutine(SendJsonToSupabase(responseTextContent));
             Debug.Log("JSON Sent to Supabase");
         }
         else
@@ -294,6 +295,14 @@ public class AudioFileLogger : MonoBehaviour
         public string content;
     }
 
+    public void GeneratePatientIdAndTimestamp()
+    {
+        patientId = GeneratePatientId();
+        timestamp = GenerateTimestamp();
+        Debug.Log($"Generated Patient ID: {patientId}");
+        Debug.Log($"Generated Timestamp: {timestamp}");
+    }
+
     // SendJsonToSupabase(string jsonData)
     // Parameters: jsonData - the JSON string to be sent to Supabase.
     // Returns: None
@@ -302,30 +311,189 @@ public class AudioFileLogger : MonoBehaviour
     private IEnumerator SendJsonToSupabase(string jsonData)
     {
         Debug.Log("Current JSON: " + jsonData);
-        string supabaseUrl = "https://yuwrsuaqhbbfxqlrybgg.supabase.co/rest/v1/PatientData";
-        string supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1d3JzdWFxaGJiZnhxbHJ5YmdnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MDA3NTk0NywiZXhwIjoyMDU1NjUxOTQ3fQ.oDOmFPwxbq9FosgsJb4YPs3xwVTPdNL4ihNlw3oZwTk"; // Replace with your Supabase API key service role key
 
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+        // First, fetch existing data for this patient
+        string fetchUrl = $"{supabaseUrl}?PatientID=eq.{patientId}";
+        UnityWebRequest fetchRequest = UnityWebRequest.Get(fetchUrl);
+        fetchRequest.SetRequestHeader("apikey", supabaseKey);
+        fetchRequest.SetRequestHeader("Authorization", "Bearer " + supabaseKey);
 
-        UnityWebRequest request = new UnityWebRequest(supabaseUrl, "POST");
-        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("apikey", supabaseKey); // Include the apikey header
-        request.SetRequestHeader("Authorization", "Bearer " + supabaseKey);
-        // The Prefer header instructs Supabase to merge duplicates and return the updated/created record.
-        request.SetRequestHeader("Prefer", "resolution=merge-duplicates,return=representation");
+        yield return fetchRequest.SendWebRequest();
 
-        yield return request.SendWebRequest();
+        string mergedJson = jsonData;
 
-        if (request.result == UnityWebRequest.Result.Success)
+        if (fetchRequest.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("Successfully sent JSON to Supabase: " + request.downloadHandler.text);
+            string existingData = fetchRequest.downloadHandler.text;
+            Debug.Log("Fetched existing data: " + existingData);
+
+            // Check if we got any data back (empty array means no existing record)
+            if (existingData != null && existingData.Length > 2 && !existingData.Equals("[]"))
+            {
+                // Remove the array brackets since we expect only one record
+                existingData = existingData.Trim().TrimStart('[').TrimEnd(']');
+
+                // Merge the existing data with the new data
+                mergedJson = MergeJsonData(existingData, jsonData);
+            }
         }
         else
         {
-            Debug.LogError("Error sending JSON to Supabase: " + request.error);
-            Debug.LogError("Response: " + request.downloadHandler.text);
+            Debug.LogWarning("Failed to fetch existing data: " + fetchRequest.error);
+            // Continue with just the new data if fetch fails
         }
+
+        // Now send the merged data back to Supabase
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(mergedJson);
+
+        UnityWebRequest updateRequest = new UnityWebRequest(supabaseUrl, "POST");
+        updateRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        updateRequest.downloadHandler = new DownloadHandlerBuffer();
+        updateRequest.SetRequestHeader("Content-Type", "application/json");
+        updateRequest.SetRequestHeader("apikey", supabaseKey);
+        updateRequest.SetRequestHeader("Authorization", "Bearer " + supabaseKey);
+        updateRequest.SetRequestHeader("Prefer", "resolution=merge-duplicates,return=representation");
+
+        yield return updateRequest.SendWebRequest();
+
+        if (updateRequest.result == UnityWebRequest.Result.Success)
+        {
+            Debug.Log("Successfully sent merged JSON to Supabase: " + updateRequest.downloadHandler.text);
+        }
+        else
+        {
+            Debug.LogError("Error sending merged JSON to Supabase: " + updateRequest.error);
+            Debug.LogError("Response: " + updateRequest.downloadHandler.text);
+        }
+    }
+
+    // Helper method to merge JSON data
+    private string MergeJsonData(string existingJson, string newJson)
+    {
+        try
+        {
+            // Simple JSON parsing approach using string manipulation
+            // This avoids dependencies on external JSON libraries
+
+            // Remove the curly braces
+            string existingContent = existingJson.Trim().TrimStart('{').TrimEnd('}');
+            string newContent = newJson.Trim().TrimStart('{').TrimEnd('}');
+
+            // Split by key-value pairs
+            Dictionary<string, string> existingPairs = new Dictionary<string, string>();
+            Dictionary<string, string> newPairs = new Dictionary<string, string>();
+
+            // Parse existing JSON
+            string[] existingItems = SplitJsonIntoPairs(existingContent);
+            foreach (string item in existingItems)
+            {
+                if (string.IsNullOrEmpty(item.Trim())) continue;
+
+                int colonIndex = item.IndexOf(':');
+                if (colonIndex > 0)
+                {
+                    string key = item.Substring(0, colonIndex).Trim().Trim('"');
+                    string value = item.Substring(colonIndex + 1).Trim().Trim('"');
+                    existingPairs[key] = value;
+                }
+            }
+
+            // Parse new JSON
+            string[] newItems = SplitJsonIntoPairs(newContent);
+            foreach (string item in newItems)
+            {
+                if (string.IsNullOrEmpty(item.Trim())) continue;
+
+                int colonIndex = item.IndexOf(':');
+                if (colonIndex > 0)
+                {
+                    string key = item.Substring(0, colonIndex).Trim().Trim('"');
+                    string value = item.Substring(colonIndex + 1).Trim().Trim('"');
+                    newPairs[key] = value;
+                }
+            }
+
+            // Merge the dictionaries
+            Dictionary<string, string> mergedPairs = new Dictionary<string, string>(existingPairs);
+
+            foreach (var pair in newPairs)
+            {
+                string key = pair.Key;
+                string newValue = pair.Value;
+
+                // Skip empty values in new data
+                if (string.IsNullOrEmpty(newValue)) continue;
+
+                // If the key exists and has a value, combine old and new
+                if (existingPairs.ContainsKey(key) && !string.IsNullOrEmpty(existingPairs[key]))
+                {
+                    string existingValue = existingPairs[key];
+
+                    // Don't duplicate if values are the same
+                    if (existingValue != newValue)
+                    {
+                        mergedPairs[key] = $"{existingValue}, {newValue}";
+                    }
+                    // else keep existing value
+                }
+                else
+                {
+                    // Key doesn't exist or has empty value, just use new value
+                    mergedPairs[key] = newValue;
+                }
+            }
+
+            // Build the merged JSON
+            StringBuilder sb = new StringBuilder();
+            sb.Append('{');
+
+            bool first = true;
+            foreach (var pair in mergedPairs)
+            {
+                if (!first) sb.Append(',');
+                sb.Append($"\"{pair.Key}\":\"{pair.Value}\"");
+                first = false;
+            }
+
+            sb.Append('}');
+            return sb.ToString();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error merging JSON data: {ex.Message}");
+            // Return the new JSON if merging fails
+            return newJson;
+        }
+    }
+
+    // Helper method to split JSON string into key-value pairs
+    private string[] SplitJsonIntoPairs(string jsonContent)
+    {
+        List<string> pairs = new List<string>();
+        int startIndex = 0;
+        bool inQuotes = false;
+
+        for (int i = 0; i < jsonContent.Length; i++)
+        {
+            char c = jsonContent[i];
+
+            if (c == '"')
+            {
+                inQuotes = !inQuotes;
+            }
+            else if (c == ',' && !inQuotes)
+            {
+                pairs.Add(jsonContent.Substring(startIndex, i - startIndex));
+                startIndex = i + 1;
+            }
+        }
+
+        // Add the last pair
+        if (startIndex < jsonContent.Length)
+        {
+            pairs.Add(jsonContent.Substring(startIndex));
+        }
+
+        return pairs.ToArray();
     }
 }

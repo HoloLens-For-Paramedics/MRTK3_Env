@@ -8,7 +8,7 @@ public class AudioRecorder : MonoBehaviour
     private AudioClip recordingClip;
     private bool isRecording = false;
     private string directoryPath;
-    private float recordingDuration = 10f; // Time in seconds for recording
+    private float recordingDuration = 20f; // Time in seconds for recording
     private bool waitingToSave = false;
     private AudioFileLogger fileLogger;
 
@@ -16,6 +16,7 @@ public class AudioRecorder : MonoBehaviour
     {
         // Ensure the directory exists
         directoryPath = Path.Combine(Application.persistentDataPath, "Recordings");
+        // directoryPath = Path.Combine(Application.dataPath, "Recordings"); // dev use only
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
