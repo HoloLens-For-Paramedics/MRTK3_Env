@@ -55,7 +55,7 @@ public class AudioFileLogger : MonoBehaviour
     private string json_template;
 
     private string timestamp;
-    private string prompt = "You are to fill out the following JSON data with the corresponding string input. Do not delete Patient ID. Do not add information to the JSON that does not exist. Only add what you are certain matches with JSON field. Do not give your answer formatted. Omit newline, tab, or any other formatting. Return your JSON data as a readable string. Make sure to return the complete JSON template, even if data is missing. You should also add, to the section Severity, a severity level based on the severity of the patient's condition (Undetermined, Good, Fair, Serious, Critical). From input, you may reformat the answer to be more easily readable. Ex: \"I have an allergy to peanuts\" may just be \"peanuts\".";
+    private string prompt = "You are to fill out the following JSON data with the corresponding string input. Do not delete Patient ID. Do not add information to the JSON that does not exist. Only add what you are certain matches with JSON field. Do not give your answer formatted. Omit newline, tab, or any other formatting. Return your JSON data as a readable string. Make sure to return the complete JSON template, even if data is missing. You should also add, to the section Severity, a severity level based on the severity of the patient's condition (Undetermined, Good, Fair, Serious, Critical). If you obtain gender, assign M or F (male or female).From input, you may reformat the answer to be more easily readable. Ex: \"I have an allergy to peanuts\" may just be \"peanuts\".";
 
     // AppSettings class
     // This class is used to store the API keys and region.
