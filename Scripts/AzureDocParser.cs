@@ -9,37 +9,45 @@ public static class AzureDocParser
 
         try
         {
-            var root = JsonUtility.FromJson<AnalyzeRootWrapper>(WrapForUnityJson(json));
+            var root = JsonUtility.FromJson<LayoutWrapper>(WrapForUnityJson(json));
 
-            if (root.analyzeResult != null)
+            if (root.analyzeResult?.pages != null)
             {
-                // Key-Value Pairs
-                if (root.analyzeResult.documents != null && root.analyzeResult.documents.Length > 0)
+                for (int i = 0; i < root.analyzeResult.pages.Length; i++)
                 {
-                    sb.AppendLine("--- Key-Value Pairs ---");
-                    foreach (var field in root.analyzeResult.documents[0].fields)
-                    {
-                        sb.AppendLine($"{field.key}: {field.content}");
-                    }
-                }
+                    var page = root.analyzeResult.pages[i];
+                    sb.AppendLine($"--- Page {i + 1} ---");
 
-                // Tables
-                if (root.analyzeResult.tables != null && root.analyzeResult.tables.Length > 0)
-                {
-                    sb.AppendLine("\n--- Tables ---");
-                    foreach (var table in root.analyzeResult.tables)
+                    // Lines
+                    if (page.lines != null)
                     {
-                        foreach (var cell in table.cells)
+                        sb.AppendLine("Lines:");
+                        foreach (var line in page.lines)
                         {
-                            sb.AppendLine($"Cell[{cell.rowIndex},{cell.columnIndex}]: {cell.content}");
+                            sb.AppendLine($"• {line.content}");
                         }
                     }
+
+                    // Tables
+                    if (page.tables != null)
+                    {
+                        sb.AppendLine("\nTables:");
+                        foreach (var table in page.tables)
+                        {
+                            foreach (var cell in table.cells)
+                            {
+                                sb.AppendLine($"Cell[{cell.rowIndex},{cell.columnIndex}]: {cell.content}");
+                            }
+                        }
+                    }
+
+                    sb.AppendLine();
                 }
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Form parsing failed: " + e.Message);
+            Debug.LogError("Layout parsing failed: " + e.Message);
         }
 
         return sb.ToString();
@@ -66,28 +74,27 @@ public static class AzureDocParser
     }
 
     [System.Serializable]
-    private class AnalyzeRootWrapper
+    private class LayoutWrapper
     {
-        public AnalyzeResult analyzeResult;
+        public LayoutResult analyzeResult;
     }
 
     [System.Serializable]
-    private class AnalyzeResult
+    private class LayoutResult
     {
-        public Document[] documents;
+        public Page[] pages;
+    }
+
+    [System.Serializable]
+    private class Page
+    {
+        public Line[] lines;
         public Table[] tables;
     }
 
     [System.Serializable]
-    private class Document
+    private class Line
     {
-        public Field[] fields;
-    }
-
-    [System.Serializable]
-    private class Field
-    {
-        public string key;
         public string content;
     }
 
