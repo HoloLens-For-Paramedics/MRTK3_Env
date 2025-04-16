@@ -29,7 +29,7 @@ public class AzureDocInt : MonoBehaviour
 
     private IEnumerator AnalyzeForm(byte[] imageBytes)
     {
-        string url = endpoint + "formrecognizer/documentModels/prebuilt-document:analyze?api-version=2023-07-31-preview";
+        string url = endpoint + "formrecognizer/documentModels/prebuilt-layout:analyze?api-version=2024-11-30";
 
         UnityWebRequest request = new UnityWebRequest(url, "POST");
         request.uploadHandler = new UploadHandlerRaw(imageBytes);
