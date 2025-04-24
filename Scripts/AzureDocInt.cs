@@ -24,10 +24,10 @@ public class AzureDocInt : MonoBehaviour
         }
 
         byte[] imageBytes = File.ReadAllBytes(imagePath);
-        StartCoroutine(AnalyzeForm(imageBytes));
+        StartCoroutine(AnalyzeForm(imageBytes, imagePath));
     }
 
-    private IEnumerator AnalyzeForm(byte[] imageBytes)
+    private IEnumerator AnalyzeForm(byte[] imageBytes, string imagePath)
     {
         string url = endpoint + "formrecognizer/documentModels/prebuilt-layout:analyze?api-version=2024-11-30";
 
@@ -44,7 +44,7 @@ public class AzureDocInt : MonoBehaviour
             string operationLocation = request.GetResponseHeader("operation-location");
             if (!string.IsNullOrEmpty(operationLocation))
             {
-                StartCoroutine(PollForResult(operationLocation));
+                StartCoroutine(PollForResult(operationLocation, imagePath));
             }
             else
             {
@@ -57,7 +57,7 @@ public class AzureDocInt : MonoBehaviour
         }
     }
 
-    private IEnumerator PollForResult(string operationLocation)
+    private IEnumerator PollForResult(string operationLocation, string imagePath)
     {
         bool done = false;
 
@@ -80,6 +80,7 @@ public class AzureDocInt : MonoBehaviour
                     Info.text = extractedText;
                     Window.SetActive(true);
                     done = true;
+                    File.Delete(imagePath);
                 }
                 else
                 {
