@@ -24,10 +24,10 @@ public class AzureOCR : MonoBehaviour
         }
 
         byte[] imageBytes = File.ReadAllBytes(imagePath);
-        StartCoroutine(SendImageForOCR(imageBytes));
+        StartCoroutine(SendImageForOCR(imageBytes, imagePath));
     }
 
-    public IEnumerator SendImageForOCR(byte[] imageBytes)
+    public IEnumerator SendImageForOCR(byte[] imageBytes, string imagePath)
     {
         UnityWebRequest www = UnityWebRequest.Put(endpoint, imageBytes);
         www.method = UnityWebRequest.kHttpVerbPOST;
@@ -41,7 +41,7 @@ public class AzureOCR : MonoBehaviour
             // Azure gives you an operation-location to poll for the result
             string operationLocation = www.GetResponseHeader("operation-location");
             Debug.Log("OCR request sent. Polling at: " + operationLocation);
-            StartCoroutine(PollForResult(operationLocation));
+            StartCoroutine(PollForResult(operationLocation, imagePath));
         }
         else
         {
@@ -49,7 +49,7 @@ public class AzureOCR : MonoBehaviour
         }
     }
 
-    IEnumerator PollForResult(string url)
+    IEnumerator PollForResult(string url, string imagePath)
     {
         bool done = false;
 
@@ -71,12 +71,12 @@ public class AzureOCR : MonoBehaviour
                     {
                         Debug.Log("✅ OCR complete:\n" + json);
 
-                        // Optional: extract text
                         string text = AzureOCRParser.ExtractTextBlock(json);
                         Debug.Log("📝 Extracted Text:\n" + text);
                         Info.text = text;
                         Window.SetActive(true);
                         done = true;
+                        File.Delete(imagePath);
                     }
                     else
                     {
