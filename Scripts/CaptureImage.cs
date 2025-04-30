@@ -50,13 +50,13 @@ public class CaptureImage : MonoBehaviour
     {
         if (result.success)
         {
-            Debug.Log("✅ Photo saved successfully!");
-            Debug.Log($"📁 File location: {savedFilePath}");
+            Debug.Log("Photo saved successfully!");
+            Debug.Log($"File location: {savedFilePath}");
             AzureOCR.StartOCR(savedFilePath);
         }
         else
         {
-            Debug.LogError("❌ Photo save failed.");
+            Debug.LogError("Photo save failed.");
         }
 
         photoCaptureObject.StopPhotoModeAsync(OnPhotoModeStopped);
