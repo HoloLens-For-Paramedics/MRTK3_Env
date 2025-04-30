@@ -53,7 +53,7 @@ public class AzureDocInt : MonoBehaviour
         }
         else
         {
-            Debug.LogError("❌ Upload failed: " + request.responseCode + " " + request.error + " - " + request.downloadHandler.text);
+            Debug.LogError("Upload failed: " + request.responseCode + " " + request.error + " - " + request.downloadHandler.text);
         }
     }
 
@@ -76,7 +76,7 @@ public class AzureDocInt : MonoBehaviour
                 if (json.Contains("\"status\":\"succeeded\""))
                 {
                     string extractedText = AzureDocParser.ParseDocument(json);
-                    Debug.Log("✅ Extracted Data:\n" + extractedText);
+                    Debug.Log("Extracted Data:\n" + extractedText);
                     Info.text = extractedText;
                     Window.SetActive(true);
                     done = true;
@@ -84,7 +84,7 @@ public class AzureDocInt : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("⌛ Awaiting results...");
+                    Debug.Log("Awaiting results...");
                 }
             }
             else
