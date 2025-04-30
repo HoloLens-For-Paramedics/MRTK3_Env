@@ -69,10 +69,10 @@ public class AzureOCR : MonoBehaviour
 
                     if (json.Contains("\"status\":\"succeeded\""))
                     {
-                        Debug.Log("✅ OCR complete:\n" + json);
+                        Debug.Log("OCR complete:\n" + json);
 
                         string text = AzureOCRParser.ExtractTextBlock(json);
-                        Debug.Log("📝 Extracted Text:\n" + text);
+                        Debug.Log("Extracted Text:\n" + text);
                         Info.text = text;
                         Window.SetActive(true);
                         done = true;
@@ -80,7 +80,7 @@ public class AzureOCR : MonoBehaviour
                     }
                     else
                     {
-                        Debug.Log("⌛ Waiting for OCR result...");
+                        Debug.Log("Waiting for OCR result...");
                     }
                 }
                 else
